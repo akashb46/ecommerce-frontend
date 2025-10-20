@@ -1,15 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ecommerce-Frontend</title>
-    <link rel="stylesheet" href="styles/main.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ecommerce - Frontend</title>
+  <link rel="stylesheet" href="styles/min/main.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+  <!-- Use system fonts first -->
+<link rel="stylesheet" href="main.css" media="all" />
+
+<!-- Load Google Fonts asynchronously -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+
+
 </head>
 <body>
-    <header> 
-         <h1>Welcome to our online store</h1>
-         <script src="app.js"></script>
-    </header>
+  <!-- ========== HEADER ========== -->
+  <header class="header">
+      <img src="assets/Screenshot 2025-09-21 184755.png" width="140" height="100" style="padding: 0%; margin: 0%;">
+
+    <nav class="navbar">
+      <ul class="navlinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+
+    <div class="searchbar">
+      <input type="search" placeholder="Search products..." />
+      <button><i class="fas fa-search"></i></button>
+    </div>
+
+    <div class="cart">
+      <a href="cart.html"><i class="fas fa-shopping-cart"></i></a>
+      <span class="badge">3</span>
+    </div>
+
+    <div class="hamburger"><i class="fas fa-bars"></i></div>
+  </header>
+
+  <!-- ========== HERO SECTION ========== -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Biggest Sale of the Year!</h1>
+      <p>Up to 70% off on Electronics, Fashion & More. Don’t miss out!</p>
+      <a href="products.html" class="btn">Shop Now</a>
+      <script src="scripts/app.js"></script>
+      <script src="scripts/cart.js"></script>
+
+        <!-- Third-party scripts -->
+  <script src="https://example.com/script.js" async></script>
+  <script src="https://another-script.com/lib.js" defer></script>
+
+    </div>
+  </section>
 </body>
 </html>

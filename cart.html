@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Cart</title>
+  <link rel="stylesheet" href="styles/min/main.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+  
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <header>
+    <nav>
+      <h2>🛍️ My Shop</h2>
+      <div class="cart">
+        <i class="fas fa-shopping-cart"></i>
+        <span id="cart-count" class="badge">0</span>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <h2 class="page-title">🛒 Your Shopping Cart</h2>
+    <div id="cart-container">
+      <!-- Cart items will be injected here -->
+    </div>
+    <div id="cart-summary" class="summary">
+      <h3>Total: ₹<span id="cart-total">0</span></h3>
+      <a href="checkout.html" class="checkout-btn"><button style="background: #28a745">Proceed to checkout</button></a>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 My Shop. All rights reserved.</p>
+  </footer>
+  
+  <script src="scripts/cart.js"></script>
+  <script src="scripts/app.js"></script>
+  <script src="scripts/app.bundle.min.js"></script>
+</body>
+</html>

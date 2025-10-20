@@ -1,0 +1,120 @@
+/* ✅ Reset some default styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+}
+
+/* ✅ Header Styling */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e5e5;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* Logo */
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Navigation Menu */
+.navbar .nav-links {
+  list-style: none;
+  display: flex;
+  gap: 25px;
+}
+
+.navbar .nav-links li a {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.navbar .nav-links li a:hover {
+  color: #007bff;
+}
+
+/* Search Box */
+.search-box {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 25px;
+  overflow: hidden;
+  margin-right: 20px;
+}
+
+.search-box input {
+  border: none;
+  outline: none;
+  padding: 8px 12px;
+  width: 180px;
+}
+
+.search-box button {
+  background: #007bff;
+  border: none;
+  color: white;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.search-box button:hover {
+  background: #0056b3;
+}
+
+/* Cart Icon */
+.cart {
+  position: relative;
+  font-size: 20px;
+  margin-right: 20px;
+  cursor: pointer;
+  color: #333;
+}
+
+.cart .badge {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  background: #ff3b3b;
+  color: #fff;
+  padding: 2px 6px;
+  font-size: 12px;
+  border-radius: 50%;
+}
+
+/* Hamburger Menu */
+.hamburger {
+  display: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #333;
+}
+
+/* ✅ Responsive (Mobile) */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none; /* Hide menu links on mobile */
+  }
+
+  .hamburger {
+    display: block;
+  }
+
+  .search-box input {
+    width: 120px;
+  }
+}

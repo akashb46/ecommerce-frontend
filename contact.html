@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us - Akshavi Shop</title>
+  <link rel="stylesheet" href="styles/min/main.min.css">
+  <link rel="stylesheet" href="styles/contact.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="header">
+    <img src="assets/Screenshot 2025-09-21 184755.png" width="300" height="150">
+    <nav class="navbar">
+      <ul class="navlinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section class="contact-section">
+      <h1>Contact Us</h1>
+      <p>If you have any questions or need assistance, feel free to reach out to us. We're here to help!</p>
+      <form action="submit_form.php" method="POST" class="contact-form">
+        <label for="name">Full Name:</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="email">Email Address:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="message">Your Message:</label>
+        <textarea id="message" name="message" rows="4" required></textarea>
+
+        <button type="submit">Send Message</button>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 Akshavi Shop. All rights reserved.</p>
+  </footer>
+</body>
+</html>
