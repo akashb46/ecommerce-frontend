@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       if (logoutBtn) logoutBtn.style.display = "none";
       if (userNameElem) userNameElem.textContent = "";
-      // Redirect if on protected page
+      // Redirect if user is not logged in and not already on auth pages
       if (!window.location.href.includes("login.html") && !window.location.href.includes("signup.html")) {
         window.location.href = "login.html";
       }
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         await signOut(auth);
         alert("Logged out successfully!");
-      //  window.location.href = "login.html";
+        window.location.href = "login.html";
       } catch (error) {
         alert("Error logging out: " + error.message);
       }
@@ -91,7 +91,8 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         await signInWithEmailAndPassword(auth, email, password);
         alert("Login successful!");
-        window.location.href = 'index.html';
+        // Redirect to homepage or dashboard after login
+        window.location.href = "shop.html"; // change this page if needed
       } catch (error) {
         switch (error.code) {
           case "auth/user-not-found":
@@ -152,7 +153,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const password = signupPassword.value.trim();
       const confirmPass = confirmPassword.value.trim();
 
-      // Validation
       if (!name || !email || !password || !confirmPass) {
         alert("Please fill all fields!");
         return;
@@ -171,9 +171,14 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName: name });
-        alert("Signup successful! Please login.");
+        
+        alert("Signup successful! Redirecting to login page...");
         signupForm.reset();
-          window.location.href = 'login.html';
+        
+        // Delay ensures Firebase fully updates user before redirect
+        setTimeout(() => {
+          window.location.href = "login.html";
+        }, 800);
       } catch (error) {
         switch (error.code) {
           case "auth/email-already-in-use":
