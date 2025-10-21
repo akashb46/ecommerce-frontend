@@ -26,39 +26,35 @@ const auth = getAuth(app);
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // ===== AUTH STATE =====
   const logoutBtn = document.getElementById("logoutBtn");
   const userNameElem = document.getElementById("userName");
-
- onAuthStateChanged(auth, (user) => {
   const currentPage = window.location.href;
 
-  if (user) {
-    console.log("✅ User logged in:", user.email);
-    if (logoutBtn) logoutBtn.style.display = "inline-block";
-    if (userNameElem) userNameElem.textContent = `Hello, ${user.displayName || user.email}`;
+  // ===== AUTH STATE =====
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // User is logged in
+      if (logoutBtn) logoutBtn.style.display = "inline-block";
+      if (userNameElem) userNameElem.textContent = `Hello, ${user.displayName || user.email}`;
 
-    // If the user is logged in and currently on login/signup page → redirect to home/shop
-    if (currentPage.includes("login.html") || currentPage.includes("signup.html")) {
-      window.location.href = "home.html"; // ✅ Change this to your homepage
-    }
-  } else {
-    console.log("⚠️ No user logged in yet");
-    if (logoutBtn) logoutBtn.style.display = "none";
-    if (userNameElem) userNameElem.textContent = "";
-
-    // Delay redirect slightly to allow Firebase to finish checking state
-    setTimeout(() => {
-      if (
-        !currentPage.includes("login.html") &&
-        !currentPage.includes("signup.html")
-      ) {
-        window.location.href = "login.html";
+      // Prevent logged-in users from accessing login/signup
+      if (currentPage.includes("login.html") || currentPage.includes("signup.html")) {
+        window.location.href = "home.html"; // Redirect to homepage
       }
-    }, 1000); // wait 1 second before redirecting
-  }
-});
 
+    } else {
+      // No user logged in
+      if (logoutBtn) logoutBtn.style.display = "none";
+      if (userNameElem) userNameElem.textContent = "";
+
+      // Redirect from protected pages
+      setTimeout(() => {
+        if (!currentPage.includes("login.html") && !currentPage.includes("signup.html")) {
+          window.location.href = "login.html";
+        }
+      }, 800); // Slight delay to let Firebase finish checking
+    }
+  });
 
   // ===== LOGOUT =====
   if (logoutBtn) {
@@ -106,8 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         await signInWithEmailAndPassword(auth, email, password);
         alert("Login successful!");
-        // Redirect to homepage or dashboard after login
-        window.location.href = "home.html"; // change this page if needed
+        window.location.href = "home.html"; // Redirect after login
       } catch (error) {
         switch (error.code) {
           case "auth/user-not-found":
@@ -134,13 +129,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Password toggle
     if (signupToggle) {
       signupToggle.addEventListener('click', () => {
-        if (signupPassword.type === 'password') {
-          signupPassword.type = 'text';
-          signupToggle.textContent = '🙈';
-        } else {
-          signupPassword.type = 'password';
-          signupToggle.textContent = '👁️';
-        }
+        signupPassword.type = signupPassword.type === 'password' ? 'text' : 'password';
+        signupToggle.textContent = signupPassword.type === 'password' ? '👁️' : '🙈';
       });
     }
 
@@ -189,10 +179,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         alert("Signup successful! Redirecting to login page...");
         signupForm.reset();
-        
-        // Delay ensures Firebase fully updates user before redirect
+
         setTimeout(() => {
-          window.location.href = "login.html";
+          window.location.href = "login.html"; // Redirect after signup
         }, 800);
       } catch (error) {
         switch (error.code) {
