@@ -31,28 +31,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const currentPage = window.location.href;
 
   // ===== AUTH STATE =====
-  onAuthStateChanged(auth, (user) => {
+  const authStateUnsubscribe = onAuthStateChanged(auth, (user) => {
     if (user) {
-      // User is logged in
       if (logoutBtn) logoutBtn.style.display = "inline-block";
       if (userNameElem) userNameElem.textContent = `Hello, ${user.displayName || user.email}`;
 
-      // Prevent logged-in users from accessing login/signup
+      // Redirect logged-in users away from login/signup pages
       if (currentPage.includes("login.html") || currentPage.includes("signup.html")) {
-        window.location.href = "home.html"; // Redirect to homepage
+        window.location.href = "home.html"; // Your homepage
       }
-
     } else {
-      // No user logged in
       if (logoutBtn) logoutBtn.style.display = "none";
       if (userNameElem) userNameElem.textContent = "";
 
-      // Redirect from protected pages
+      // Redirect unauthenticated users from protected pages
       setTimeout(() => {
         if (!currentPage.includes("login.html") && !currentPage.includes("signup.html")) {
           window.location.href = "login.html";
         }
-      }, 800); // Slight delay to let Firebase finish checking
+      }, 800);
     }
   });
 
@@ -75,20 +72,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginPasswordInput = document.getElementById('loginPassword');
     const loginToggle = document.querySelector('#loginForm .toggle-password');
 
-    // Password toggle
     if (loginToggle) {
       loginToggle.addEventListener('click', () => {
-        if (loginPasswordInput.type === 'password') {
-          loginPasswordInput.type = 'text';
-          loginToggle.textContent = '🙈';
-        } else {
-          loginPasswordInput.type = 'password';
-          loginToggle.textContent = '👁️';
-        }
+        loginPasswordInput.type = loginPasswordInput.type === 'password' ? 'text' : 'password';
+        loginToggle.textContent = loginPasswordInput.type === 'password' ? '👁️' : '🙈';
       });
     }
 
-    // Login submit
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('loginEmail').value.trim();
@@ -102,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         await signInWithEmailAndPassword(auth, email, password);
         alert("Login successful!");
-        window.location.href = "home.html"; // Redirect after login
+        window.location.href = "home.html"; // Change to your homepage
       } catch (error) {
         switch (error.code) {
           case "auth/user-not-found":
@@ -126,7 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const strengthMsg = document.getElementById('strengthMsg');
     const signupToggle = document.querySelector('#signupForm .toggle-password');
 
-    // Password toggle
     if (signupToggle) {
       signupToggle.addEventListener('click', () => {
         signupPassword.type = signupPassword.type === 'password' ? 'text' : 'password';
@@ -134,7 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Password strength indicator
     signupPassword.addEventListener('input', () => {
       const val = signupPassword.value;
       if (val.length < 8) {
@@ -149,7 +137,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Signup submit
     signupForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -174,15 +161,21 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
+        // Temporarily disable auth state listener during signup
+        const unsubscribe = authStateUnsubscribe;
+
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName: name });
-        
+
         alert("Signup successful! Redirecting to login page...");
         signupForm.reset();
 
-        setTimeout(() => {
-          window.location.href = "login.html"; // Redirect after signup
-        }, 800);
+        // Redirect to login
+        window.location.href = "login.html";
+
+        // Re-enable auth state listener
+        unsubscribe();
+
       } catch (error) {
         switch (error.code) {
           case "auth/email-already-in-use":
