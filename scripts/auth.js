@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (userNameElem) userNameElem.textContent = "";
       // Redirect if on protected page
       if (!window.location.href.includes("login.html") && !window.location.href.includes("signup.html")) {
-        window.location.href = "login.html";
+       // window.location.href = "login.html";
       }
     }
   });
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         await signOut(auth);
         alert("Logged out successfully!");
-        window.location.href = "login.html";
+      //  window.location.href = "login.html";
       } catch (error) {
         alert("Error logging out: " + error.message);
       }
@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await updateProfile(userCredential.user, { displayName: name });
         alert("Signup successful! Please login.");
         signupForm.reset();
-        window.location.href = 'login.html';
+       // window.location.href = 'login.html';
       } catch (error) {
         switch (error.code) {
           case "auth/email-already-in-use":
