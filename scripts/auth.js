@@ -30,20 +30,35 @@ document.addEventListener('DOMContentLoaded', () => {
   const logoutBtn = document.getElementById("logoutBtn");
   const userNameElem = document.getElementById("userName");
 
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      console.log("User is logged in:", user.email);
-      if (logoutBtn) logoutBtn.style.display = "inline-block";
-      if (userNameElem) userNameElem.textContent = `Hello, ${user.displayName || user.email}`;
-    } else {
-      if (logoutBtn) logoutBtn.style.display = "none";
-      if (userNameElem) userNameElem.textContent = "";
-      // Redirect if user is not logged in and not already on auth pages
-      if (!window.location.href.includes("login.html") && !window.location.href.includes("signup.html")) {
+ onAuthStateChanged(auth, (user) => {
+  const currentPage = window.location.href;
+
+  if (user) {
+    console.log("✅ User logged in:", user.email);
+    if (logoutBtn) logoutBtn.style.display = "inline-block";
+    if (userNameElem) userNameElem.textContent = `Hello, ${user.displayName || user.email}`;
+
+    // If the user is logged in and currently on login/signup page → redirect to home/shop
+    if (currentPage.includes("login.html") || currentPage.includes("signup.html")) {
+      window.location.href = "shop.html"; // ✅ Change this to your homepage
+    }
+  } else {
+    console.log("⚠️ No user logged in yet");
+    if (logoutBtn) logoutBtn.style.display = "none";
+    if (userNameElem) userNameElem.textContent = "";
+
+    // Delay redirect slightly to allow Firebase to finish checking state
+    setTimeout(() => {
+      if (
+        !currentPage.includes("login.html") &&
+        !currentPage.includes("signup.html")
+      ) {
         window.location.href = "login.html";
       }
-    }
-  });
+    }, 1000); // wait 1 second before redirecting
+  }
+});
+
 
   // ===== LOGOUT =====
   if (logoutBtn) {
