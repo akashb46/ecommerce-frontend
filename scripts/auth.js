@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (userNameElem) userNameElem.textContent = "";
       // Redirect if on protected page
       if (!window.location.href.includes("login.html") && !window.location.href.includes("signup.html")) {
-       //window.location.href = "login.html";
+        window.location.href = "login.html";
       }
     }
   });
