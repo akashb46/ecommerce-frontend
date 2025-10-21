@@ -25,26 +25,27 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 document.addEventListener('DOMContentLoaded', () => {
-
   const logoutBtn = document.getElementById("logoutBtn");
   const userNameElem = document.getElementById("userName");
   const currentPage = window.location.href;
 
   // ===== AUTH STATE =====
-  const authStateUnsubscribe = onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, (user) => {
     if (user) {
+      // User is logged in
       if (logoutBtn) logoutBtn.style.display = "inline-block";
       if (userNameElem) userNameElem.textContent = `Hello, ${user.displayName || user.email}`;
 
-      // Redirect logged-in users away from login/signup pages
+      // Prevent logged-in users from accessing login/signup
       if (currentPage.includes("login.html") || currentPage.includes("signup.html")) {
-        window.location.href = "home.html"; // Your homepage
+        window.location.href = "home.html"; // redirect to homepage
       }
     } else {
+      // No user logged in
       if (logoutBtn) logoutBtn.style.display = "none";
       if (userNameElem) userNameElem.textContent = "";
 
-      // Redirect unauthenticated users from protected pages
+      // Redirect from protected pages
       setTimeout(() => {
         if (!currentPage.includes("login.html") && !currentPage.includes("signup.html")) {
           window.location.href = "login.html";
@@ -92,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         await signInWithEmailAndPassword(auth, email, password);
         alert("Login successful!");
-        window.location.href = "home.html"; // Change to your homepage
+        window.location.href = "home.html"; // redirect after login
       } catch (error) {
         switch (error.code) {
           case "auth/user-not-found":
@@ -149,32 +150,25 @@ document.addEventListener('DOMContentLoaded', () => {
         alert("Please fill all fields!");
         return;
       }
-
       if (password !== confirmPass) {
         alert("Passwords do not match!");
         return;
       }
-
       if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
         alert("Password must be at least 8 chars and include uppercase, lowercase & number");
         return;
       }
 
       try {
-        // Temporarily disable auth state listener during signup
-        const unsubscribe = authStateUnsubscribe;
-
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName: name });
 
         alert("Signup successful! Redirecting to login page...");
         signupForm.reset();
 
-        // Redirect to login
+        // Sign out to allow login page access
+        await signOut(auth);
         window.location.href = "login.html";
-
-        // Re-enable auth state listener
-        unsubscribe();
 
       } catch (error) {
         switch (error.code) {
@@ -193,5 +187,4 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-
 });

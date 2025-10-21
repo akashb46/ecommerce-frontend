@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login - Akshavi Shop</title>
+  <title>Login - MyShop</title>
   <link rel="stylesheet" href="styles/auth.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
 </head>
 <body>
   <header>
-    <h1>Akshavi Shop</h1>
+    <h1>MyShop</h1>
     <nav>
       <a href="home.html">Home</a>
       <a href="products.html">Products</a>
@@ -28,16 +28,19 @@
         <input type="password" id="loginPassword" placeholder="Enter your password" required />
         <span class="toggle-password">👁️</span>
       </div>
+      <a href="#" class="forgot">Forgot Password?</a>
+      <!-- Button directly inside form -->
       <button type="submit" class="btn">Login</button>
-      <p>Don't have an account? <a href="index.html">Sign up</a></p>
+      <p>Don't have an account? <a href="signup.html">Sign up</a></p>
     </form>
   </section>
 
-  <button id="logoutBtn" style="display:none;">Logout</button>
-
-  <!-- Firebase App (compat) -->
+  <!-- Firebase App (core SDK) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <!-- Firebase Auth SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+  <button id="logoutBtn" style="display:none;">Logout</button>
 
   <script type="module" src="scripts/auth.js"></script>
 </body>
