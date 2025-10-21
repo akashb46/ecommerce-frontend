@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // If the user is logged in and currently on login/signup page → redirect to home/shop
     if (currentPage.includes("login.html") || currentPage.includes("signup.html")) {
-      window.location.href = "shop.html"; // ✅ Change this to your homepage
+      window.location.href = "home.html"; // ✅ Change this to your homepage
     }
   } else {
     console.log("⚠️ No user logged in yet");
@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await signInWithEmailAndPassword(auth, email, password);
         alert("Login successful!");
         // Redirect to homepage or dashboard after login
-        window.location.href = "shop.html"; // change this page if needed
+        window.location.href = "home.html"; // change this page if needed
       } catch (error) {
         switch (error.code) {
           case "auth/user-not-found":
