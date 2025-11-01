@@ -24,7 +24,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-let isSigningUp = false; // ✅ Prevents unwanted redirects during signup
+// Global control variables
+let isSigningUp = false;
+let manualRedirect = false;
 
 document.addEventListener('DOMContentLoaded', () => {
   const logoutBtn = document.getElementById("logoutBtn");
@@ -33,28 +35,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ===== AUTH STATE =====
   onAuthStateChanged(auth, (user) => {
-    if (isSigningUp) return; // Skip redirect while signing up
+    // Prevent redirect during signup or after manual redirect
+    if (isSigningUp || manualRedirect) return;
 
     if (user) {
-      // User logged in
       if (logoutBtn) logoutBtn.style.display = "inline-block";
       if (userNameElem) userNameElem.textContent = `Hello, ${user.displayName || user.email}`;
 
-      // Prevent access to login/signup pages when logged in
+      // Prevent logged-in users from accessing login/signup
       if (currentPage.includes("login.html") || currentPage.includes("signup.html")) {
         window.location.href = "home.html";
       }
     } else {
-      // User logged out
       if (logoutBtn) logoutBtn.style.display = "none";
       if (userNameElem) userNameElem.textContent = "";
 
-      // Redirect to login page if on a protected page
-      setTimeout(() => {
-        if (!currentPage.includes("login.html") && !currentPage.includes("signup.html")) {
+      // Redirect logged-out users from protected pages
+      if (!currentPage.includes("login.html") && !currentPage.includes("signup.html")) {
+        setTimeout(() => {
           window.location.href = "login.html";
-        }
-      }, 800);
+        }, 500);
+      }
     }
   });
 
@@ -62,11 +63,14 @@ document.addEventListener('DOMContentLoaded', () => {
   if (logoutBtn) {
     logoutBtn.addEventListener("click", async () => {
       try {
+        manualRedirect = true;
         await signOut(auth);
         alert("Logged out successfully!");
         window.location.href = "login.html";
       } catch (error) {
         alert("Error logging out: " + error.message);
+      } finally {
+        manualRedirect = false;
       }
     });
   }
@@ -95,9 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
+        manualRedirect = true;
         await signInWithEmailAndPassword(auth, email, password);
         alert("Login successful!");
-        window.location.href = "home.html"; // ✅ Redirect after login
+        window.location.href = "home.html";
       } catch (error) {
         switch (error.code) {
           case "auth/user-not-found":
@@ -109,6 +114,8 @@ document.addEventListener('DOMContentLoaded', () => {
           default:
             alert(error.message);
         }
+      } finally {
+        manualRedirect = false;
       }
     });
   }
@@ -144,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     signupForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      isSigningUp = true; // ✅ Prevent redirect interference
+      isSigningUp = true;
 
       const name = document.getElementById('signupName').value.trim();
       const email = document.getElementById('signupEmail').value.trim();
@@ -174,8 +181,9 @@ document.addEventListener('DOMContentLoaded', () => {
         alert("Signup successful! Redirecting to login page...");
         signupForm.reset();
 
-        await signOut(auth); // log out after signup
-        window.location.href = "login.html";
+        // Force full sign-out and redirect cleanly
+        await signOut(auth);
+        window.location.replace("login.html");
       } catch (error) {
         switch (error.code) {
           case "auth/email-already-in-use":
@@ -185,13 +193,13 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Invalid email format.");
             break;
           case "auth/weak-password":
-            alert("Password is too weak. Use at least 8 chars, uppercase, lowercase & number.");
+            alert("Password is too weak.");
             break;
           default:
             alert(error.message);
         }
       } finally {
-        isSigningUp = false; // ✅ Reset flag
+        isSigningUp = false;
       }
     });
   }
