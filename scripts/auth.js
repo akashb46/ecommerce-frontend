@@ -24,6 +24,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
+let isSigningUp = false; // ✅ Prevents unwanted redirects during signup
+
 document.addEventListener('DOMContentLoaded', () => {
   const logoutBtn = document.getElementById("logoutBtn");
   const userNameElem = document.getElementById("userName");
@@ -31,21 +33,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ===== AUTH STATE =====
   onAuthStateChanged(auth, (user) => {
+    if (isSigningUp) return; // Skip redirect while signing up
+
     if (user) {
-      // User is logged in
+      // User logged in
       if (logoutBtn) logoutBtn.style.display = "inline-block";
       if (userNameElem) userNameElem.textContent = `Hello, ${user.displayName || user.email}`;
 
-      // Prevent logged-in users from accessing login/signup
+      // Prevent access to login/signup pages when logged in
       if (currentPage.includes("login.html") || currentPage.includes("signup.html")) {
-        window.location.href = "home.html"; // redirect to homepage
+        window.location.href = "home.html";
       }
     } else {
-      // No user logged in
+      // User logged out
       if (logoutBtn) logoutBtn.style.display = "none";
       if (userNameElem) userNameElem.textContent = "";
 
-      // Redirect from protected pages
+      // Redirect to login page if on a protected page
       setTimeout(() => {
         if (!currentPage.includes("login.html") && !currentPage.includes("signup.html")) {
           window.location.href = "login.html";
@@ -93,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         await signInWithEmailAndPassword(auth, email, password);
         alert("Login successful!");
-        window.location.href = "home.html"; // redirect after login
+        window.location.href = "home.html"; // ✅ Redirect after login
       } catch (error) {
         switch (error.code) {
           case "auth/user-not-found":
@@ -140,6 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     signupForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      isSigningUp = true; // ✅ Prevent redirect interference
 
       const name = document.getElementById('signupName').value.trim();
       const email = document.getElementById('signupEmail').value.trim();
@@ -148,14 +153,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!name || !email || !password || !confirmPass) {
         alert("Please fill all fields!");
+        isSigningUp = false;
         return;
       }
       if (password !== confirmPass) {
         alert("Passwords do not match!");
+        isSigningUp = false;
         return;
       }
       if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
         alert("Password must be at least 8 chars and include uppercase, lowercase & number");
+        isSigningUp = false;
         return;
       }
 
@@ -166,10 +174,8 @@ document.addEventListener('DOMContentLoaded', () => {
         alert("Signup successful! Redirecting to login page...");
         signupForm.reset();
 
-        // Sign out to allow login page access
-        await signOut(auth);
+        await signOut(auth); // log out after signup
         window.location.href = "login.html";
-
       } catch (error) {
         switch (error.code) {
           case "auth/email-already-in-use":
@@ -184,6 +190,8 @@ document.addEventListener('DOMContentLoaded', () => {
           default:
             alert(error.message);
         }
+      } finally {
+        isSigningUp = false; // ✅ Reset flag
       }
     });
   }
