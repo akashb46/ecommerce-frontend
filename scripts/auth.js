@@ -24,27 +24,27 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// ===== Wait for DOM =====
+// ===== DOM LOADED =====
 document.addEventListener("DOMContentLoaded", () => {
   const currentPage = window.location.pathname.split("/").pop() || "index.html";
-  const publicPages = ["index.html", "login.html", "signup.html", ""];
+
+  console.log("Current Page:", currentPage);
 
   // ===== AUTH STATE CHECK =====
   onAuthStateChanged(auth, (user) => {
-    console.log("Auth state changed:", user ? "Logged In" : "Logged Out");
-    console.log("Current Page:", currentPage);
+    console.log("Auth state:", user ? "Logged In ✅" : "Logged Out ❌");
 
     if (user) {
       // ✅ User is logged in
-      if (publicPages.includes(currentPage)) {
-        console.log("Redirecting to home.html...");
-        window.location.replace("home.html"); // avoids flicker
+      if (currentPage === "index.html" || currentPage === "login.html" || currentPage === "signup.html") {
+        console.log("Redirecting logged-in user to home.html");
+        window.location.replace("home.html");
       }
     } else {
       // 🚫 User not logged in
       if (currentPage === "home.html") {
-        console.log("Redirecting to index.html (not logged in)...");
-        window.location.replace("index.html");
+        console.log("User not logged in → Redirecting to login.html");
+        window.location.replace("login.html");
       }
     }
   });
