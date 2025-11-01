@@ -27,7 +27,7 @@ const auth = getAuth(app);
 document.addEventListener('DOMContentLoaded', () => {
   const logoutBtn = document.getElementById("logoutBtn");
   const userNameElem = document.getElementById("userName");
-  const currentPage = window.location.href;
+  const currentPage = window.location.pathname;
 
   // ===== AUTH STATE =====
   onAuthStateChanged(auth, (user) => {
@@ -36,9 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (logoutBtn) logoutBtn.style.display = "inline-block";
       if (userNameElem) userNameElem.textContent = `Hello, ${user.displayName || user.email}`;
 
-      // Prevent logged-in users from accessing login/signup
-      if (currentPage.includes("login.html") || currentPage.includes("signup.html")) {
-        window.location.href = "index.html"; // redirect to homepage
+      // Prevent logged-in users from accessing signup/login pages
+      if (currentPage.includes("index.html") || currentPage.includes("login.html")) {
+        window.location.href = "home.html"; // ✅ Go to homepage
       }
     } else {
       // No user logged in
@@ -46,15 +46,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (userNameElem) userNameElem.textContent = "";
 
       // Redirect from protected pages
-      setTimeout(() => {
-        if (
-          !currentPage.includes("login.html") &&
-          !currentPage.includes("signup.html") &&
-          !currentPage.includes("index.html")
-        ) {
+      if (!currentPage.includes("login.html") && !currentPage.includes("index.html")) {
+        setTimeout(() => {
           window.location.href = "login.html";
-        }
-      }, 800);
+        }, 500);
+      }
     }
   });
 
@@ -97,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         await signInWithEmailAndPassword(auth, email, password);
         alert("Login successful!");
-        window.location.href = "index.html"; // ✅ redirect after login
+        window.location.href = "home.html"; // ✅ redirect to homepage
       } catch (error) {
         switch (error.code) {
           case "auth/user-not-found":
@@ -119,14 +115,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const signupPassword = document.getElementById('signupPassword');
     const confirmPassword = document.getElementById('confirmPassword');
     const strengthMsg = document.getElementById('strengthMsg');
-    const signupToggle = document.querySelector('#signupForm .toggle-password');
-
-    if (signupToggle) {
-      signupToggle.addEventListener('click', () => {
-        signupPassword.type = signupPassword.type === 'password' ? 'text' : 'password';
-        signupToggle.textContent = signupPassword.type === 'password' ? '👁️' : '🙈';
-      });
-    }
 
     signupPassword.addEventListener('input', () => {
       const val = signupPassword.value;
@@ -170,10 +158,8 @@ document.addEventListener('DOMContentLoaded', () => {
         alert("Signup successful! Redirecting to login page...");
         signupForm.reset();
 
-        // Sign out to allow login page access
         await signOut(auth);
-        window.location.href = "login.html";
-
+        window.location.href = "login.html"; // ✅ Go to login after signup
       } catch (error) {
         switch (error.code) {
           case "auth/email-already-in-use":
