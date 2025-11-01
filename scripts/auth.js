@@ -27,29 +27,29 @@ const auth = getAuth(app);
 document.addEventListener('DOMContentLoaded', () => {
   const logoutBtn = document.getElementById("logoutBtn");
   const userNameElem = document.getElementById("userName");
-  const currentPage = window.location.pathname;
+  const currentPage = window.location.pathname.split("/").pop(); // only file name
 
   // ===== AUTH STATE =====
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      // User is logged in
+      // User logged in
       if (logoutBtn) logoutBtn.style.display = "inline-block";
       if (userNameElem) userNameElem.textContent = `Hello, ${user.displayName || user.email}`;
 
-      // Prevent logged-in users from accessing signup/login pages
-      if (currentPage.includes("index.html") || currentPage.includes("login.html")) {
-        window.location.href = "home.html"; // ✅ Go to homepage
+      // Prevent access to login/signup when logged in
+      if (currentPage === "login.html" || currentPage === "signup.html" || currentPage === "index.html") {
+        window.location.href = "home.html";
       }
+
     } else {
-      // No user logged in
+      // User logged out
       if (logoutBtn) logoutBtn.style.display = "none";
       if (userNameElem) userNameElem.textContent = "";
 
-      // Redirect from protected pages
-      if (!currentPage.includes("login.html") && !currentPage.includes("index.html")) {
-        setTimeout(() => {
-          window.location.href = "login.html";
-        }, 500);
+      // Redirect to login only if user is on protected pages (like home.html)
+      const publicPages = ["login.html", "signup.html", "index.html"];
+      if (!publicPages.includes(currentPage)) {
+        window.location.href = "login.html";
       }
     }
   });
@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         await signInWithEmailAndPassword(auth, email, password);
         alert("Login successful!");
-        window.location.href = "home.html"; // ✅ redirect to homepage
+        window.location.href = "home.html";
       } catch (error) {
         switch (error.code) {
           case "auth/user-not-found":
@@ -115,6 +115,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const signupPassword = document.getElementById('signupPassword');
     const confirmPassword = document.getElementById('confirmPassword');
     const strengthMsg = document.getElementById('strengthMsg');
+    const signupToggle = document.querySelector('#signupForm .toggle-password');
+
+    if (signupToggle) {
+      signupToggle.addEventListener('click', () => {
+        signupPassword.type = signupPassword.type === 'password' ? 'text' : 'password';
+        signupToggle.textContent = signupPassword.type === 'password' ? '👁️' : '🙈';
+      });
+    }
 
     signupPassword.addEventListener('input', () => {
       const val = signupPassword.value;
@@ -159,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
         signupForm.reset();
 
         await signOut(auth);
-        window.location.href = "login.html"; // ✅ Go to login after signup
+        window.location.href = "login.html";
       } catch (error) {
         switch (error.code) {
           case "auth/email-already-in-use":
