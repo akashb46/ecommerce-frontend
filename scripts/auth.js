@@ -24,10 +24,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Global control variables
-let isSigningUp = false;
-let manualRedirect = false;
-
 document.addEventListener('DOMContentLoaded', () => {
   const logoutBtn = document.getElementById("logoutBtn");
   const userNameElem = document.getElementById("userName");
@@ -35,27 +31,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ===== AUTH STATE =====
   onAuthStateChanged(auth, (user) => {
-    // Prevent redirect during signup or after manual redirect
-    if (isSigningUp || manualRedirect) return;
-
     if (user) {
+      // User is logged in
       if (logoutBtn) logoutBtn.style.display = "inline-block";
       if (userNameElem) userNameElem.textContent = `Hello, ${user.displayName || user.email}`;
 
       // Prevent logged-in users from accessing login/signup
       if (currentPage.includes("login.html") || currentPage.includes("signup.html")) {
-        window.location.href = "home.html";
+        window.location.href = "index.html"; // redirect to homepage
       }
     } else {
+      // No user logged in
       if (logoutBtn) logoutBtn.style.display = "none";
       if (userNameElem) userNameElem.textContent = "";
 
-      // Redirect logged-out users from protected pages
-      if (!currentPage.includes("login.html") && !currentPage.includes("signup.html")) {
-        setTimeout(() => {
+      // Redirect from protected pages
+      setTimeout(() => {
+        if (
+          !currentPage.includes("login.html") &&
+          !currentPage.includes("signup.html") &&
+          !currentPage.includes("index.html")
+        ) {
           window.location.href = "login.html";
-        }, 500);
-      }
+        }
+      }, 800);
     }
   });
 
@@ -63,14 +62,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (logoutBtn) {
     logoutBtn.addEventListener("click", async () => {
       try {
-        manualRedirect = true;
         await signOut(auth);
         alert("Logged out successfully!");
         window.location.href = "login.html";
       } catch (error) {
         alert("Error logging out: " + error.message);
-      } finally {
-        manualRedirect = false;
       }
     });
   }
@@ -99,10 +95,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
-        manualRedirect = true;
         await signInWithEmailAndPassword(auth, email, password);
         alert("Login successful!");
-        window.location.href = "home.html";
+        window.location.href = "index.html"; // ✅ redirect after login
       } catch (error) {
         switch (error.code) {
           case "auth/user-not-found":
@@ -114,8 +109,6 @@ document.addEventListener('DOMContentLoaded', () => {
           default:
             alert(error.message);
         }
-      } finally {
-        manualRedirect = false;
       }
     });
   }
@@ -151,7 +144,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     signupForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      isSigningUp = true;
 
       const name = document.getElementById('signupName').value.trim();
       const email = document.getElementById('signupEmail').value.trim();
@@ -160,17 +152,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!name || !email || !password || !confirmPass) {
         alert("Please fill all fields!");
-        isSigningUp = false;
         return;
       }
       if (password !== confirmPass) {
         alert("Passwords do not match!");
-        isSigningUp = false;
         return;
       }
       if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
         alert("Password must be at least 8 chars and include uppercase, lowercase & number");
-        isSigningUp = false;
         return;
       }
 
@@ -181,9 +170,10 @@ document.addEventListener('DOMContentLoaded', () => {
         alert("Signup successful! Redirecting to login page...");
         signupForm.reset();
 
-        // Force full sign-out and redirect cleanly
+        // Sign out to allow login page access
         await signOut(auth);
-        window.location.replace("login.html");
+        window.location.href = "login.html";
+
       } catch (error) {
         switch (error.code) {
           case "auth/email-already-in-use":
@@ -193,13 +183,11 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Invalid email format.");
             break;
           case "auth/weak-password":
-            alert("Password is too weak.");
+            alert("Password is too weak. Use at least 8 chars, uppercase, lowercase & number.");
             break;
           default:
             alert(error.message);
         }
-      } finally {
-        isSigningUp = false;
       }
     });
   }
