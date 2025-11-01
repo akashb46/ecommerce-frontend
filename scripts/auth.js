@@ -24,43 +24,33 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-document.addEventListener('DOMContentLoaded', () => {
-  const logoutBtn = document.getElementById("logoutBtn");
-  const userNameElem = document.getElementById("userName");
-  const currentPage = window.location.pathname.split("/").pop(); // e.g. home.html
-
-  // Define which pages are public
+// ===== Wait for DOM =====
+document.addEventListener("DOMContentLoaded", () => {
+  const currentPage = window.location.pathname.split("/").pop() || "index.html";
   const publicPages = ["index.html", "login.html", "signup.html", ""];
 
-  // ===== AUTH STATE =====
+  // ===== AUTH STATE CHECK =====
   onAuthStateChanged(auth, (user) => {
+    console.log("Auth state changed:", user ? "Logged In" : "Logged Out");
+    console.log("Current Page:", currentPage);
+
     if (user) {
-      // Logged in
-      if (logoutBtn) logoutBtn.style.display = "inline-block";
-      if (userNameElem) userNameElem.textContent = `Hello, ${user.displayName || user.email}`;
-
-      // If user is on a public page (like login/index/signup), move them to home
+      // ✅ User is logged in
       if (publicPages.includes(currentPage)) {
-        console.log("Redirecting to home (user logged in)");
-        if (!currentPage.includes("home.html")) {
-          window.location.href = "home.html";
-        }
+        console.log("Redirecting to home.html...");
+        window.location.replace("home.html"); // avoids flicker
       }
-
     } else {
-      // Logged out
-      if (logoutBtn) logoutBtn.style.display = "none";
-      if (userNameElem) userNameElem.textContent = "";
-
-      // If on a protected page, send to login
-      if (!publicPages.includes(currentPage)) {
-        console.log("Redirecting to login (user not logged in)");
-        window.location.href = "login.html";
+      // 🚫 User not logged in
+      if (currentPage === "home.html") {
+        console.log("Redirecting to index.html (not logged in)...");
+        window.location.replace("index.html");
       }
     }
   });
 
   // ===== LOGOUT =====
+  const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", async () => {
       try {
@@ -74,21 +64,23 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ===== LOGIN FORM =====
-  const loginForm = document.getElementById('loginForm');
+  const loginForm = document.getElementById("loginForm");
   if (loginForm) {
-    const loginPasswordInput = document.getElementById('loginPassword');
-    const loginToggle = document.querySelector('#loginForm .toggle-password');
+    const loginPasswordInput = document.getElementById("loginPassword");
+    const loginToggle = document.querySelector("#loginForm .toggle-password");
 
     if (loginToggle) {
-      loginToggle.addEventListener('click', () => {
-        loginPasswordInput.type = loginPasswordInput.type === 'password' ? 'text' : 'password';
-        loginToggle.textContent = loginPasswordInput.type === 'password' ? '👁️' : '🙈';
+      loginToggle.addEventListener("click", () => {
+        loginPasswordInput.type =
+          loginPasswordInput.type === "password" ? "text" : "password";
+        loginToggle.textContent =
+          loginPasswordInput.type === "password" ? "👁️" : "🙈";
       });
     }
 
-    loginForm.addEventListener('submit', async (e) => {
+    loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const email = document.getElementById('loginEmail').value.trim();
+      const email = document.getElementById("loginEmail").value.trim();
       const password = loginPasswordInput.value.trim();
 
       if (!email || !password) {
@@ -116,39 +108,46 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ===== SIGNUP FORM =====
-  const signupForm = document.getElementById('signupForm');
+  const signupForm = document.getElementById("signupForm");
   if (signupForm) {
-    const signupPassword = document.getElementById('signupPassword');
-    const confirmPassword = document.getElementById('confirmPassword');
-    const strengthMsg = document.getElementById('strengthMsg');
-    const signupToggle = document.querySelector('#signupForm .toggle-password');
+    const signupPassword = document.getElementById("signupPassword");
+    const confirmPassword = document.getElementById("confirmPassword");
+    const strengthMsg = document.getElementById("strengthMsg");
+    const signupToggle = document.querySelector("#signupForm .toggle-password");
 
     if (signupToggle) {
-      signupToggle.addEventListener('click', () => {
-        signupPassword.type = signupPassword.type === 'password' ? 'text' : 'password';
-        signupToggle.textContent = signupPassword.type === 'password' ? '👁️' : '🙈';
+      signupToggle.addEventListener("click", () => {
+        signupPassword.type =
+          signupPassword.type === "password" ? "text" : "password";
+        signupToggle.textContent =
+          signupPassword.type === "password" ? "👁️" : "🙈";
       });
     }
 
-    signupPassword.addEventListener('input', () => {
+    signupPassword.addEventListener("input", () => {
       const val = signupPassword.value;
       if (val.length < 8) {
-        strengthMsg.textContent = 'Weak (min 8 chars)';
-        strengthMsg.style.color = 'red';
-      } else if (!/[A-Z]/.test(val) || !/[a-z]/.test(val) || !/[0-9]/.test(val)) {
-        strengthMsg.textContent = 'Medium (include uppercase, lowercase & number)';
-        strengthMsg.style.color = 'orange';
+        strengthMsg.textContent = "Weak (min 8 chars)";
+        strengthMsg.style.color = "red";
+      } else if (
+        !/[A-Z]/.test(val) ||
+        !/[a-z]/.test(val) ||
+        !/[0-9]/.test(val)
+      ) {
+        strengthMsg.textContent =
+          "Medium (include uppercase, lowercase & number)";
+        strengthMsg.style.color = "orange";
       } else {
-        strengthMsg.textContent = 'Strong password';
-        strengthMsg.style.color = 'green';
+        strengthMsg.textContent = "Strong password";
+        strengthMsg.style.color = "green";
       }
     });
 
-    signupForm.addEventListener('submit', async (e) => {
+    signupForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const name = document.getElementById('signupName').value.trim();
-      const email = document.getElementById('signupEmail').value.trim();
+      const name = document.getElementById("signupName").value.trim();
+      const email = document.getElementById("signupEmail").value.trim();
       const password = signupPassword.value.trim();
       const confirmPass = confirmPassword.value.trim();
 
@@ -160,13 +159,24 @@ document.addEventListener('DOMContentLoaded', () => {
         alert("Passwords do not match!");
         return;
       }
-      if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
-        alert("Password must be at least 8 chars and include uppercase, lowercase & number");
+      if (
+        password.length < 8 ||
+        !/[A-Z]/.test(password) ||
+        !/[a-z]/.test(password) ||
+        !/[0-9]/.test(password)
+      ) {
+        alert(
+          "Password must be at least 8 chars and include uppercase, lowercase & number"
+        );
         return;
       }
 
       try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
         await updateProfile(userCredential.user, { displayName: name });
 
         alert("Signup successful! Redirecting to login page...");
@@ -183,7 +193,9 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Invalid email format.");
             break;
           case "auth/weak-password":
-            alert("Password is too weak. Use at least 8 chars, uppercase, lowercase & number.");
+            alert(
+              "Password is too weak. Use at least 8 chars, uppercase, lowercase & number."
+            );
             break;
           default:
             alert(error.message);
