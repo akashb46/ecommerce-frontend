@@ -27,28 +27,34 @@ const auth = getAuth(app);
 document.addEventListener('DOMContentLoaded', () => {
   const logoutBtn = document.getElementById("logoutBtn");
   const userNameElem = document.getElementById("userName");
-  const currentPage = window.location.pathname.split("/").pop(); // only file name
+  const currentPage = window.location.pathname.split("/").pop(); // e.g. home.html
+
+  // Define which pages are public
+  const publicPages = ["index.html", "login.html", "signup.html", ""];
 
   // ===== AUTH STATE =====
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      // User logged in
+      // Logged in
       if (logoutBtn) logoutBtn.style.display = "inline-block";
       if (userNameElem) userNameElem.textContent = `Hello, ${user.displayName || user.email}`;
 
-      // Prevent access to login/signup when logged in
-      if (currentPage === "login.html" || currentPage === "signup.html" || currentPage === "index.html") {
-        window.location.href = "home.html";
+      // If user is on a public page (like login/index/signup), move them to home
+      if (publicPages.includes(currentPage)) {
+        console.log("Redirecting to home (user logged in)");
+        if (!currentPage.includes("home.html")) {
+          window.location.href = "home.html";
+        }
       }
 
     } else {
-      // User logged out
+      // Logged out
       if (logoutBtn) logoutBtn.style.display = "none";
       if (userNameElem) userNameElem.textContent = "";
 
-      // Redirect to login only if user is on protected pages (like home.html)
-      const publicPages = ["login.html", "signup.html", "index.html"];
+      // If on a protected page, send to login
       if (!publicPages.includes(currentPage)) {
+        console.log("Redirecting to login (user not logged in)");
         window.location.href = "login.html";
       }
     }
