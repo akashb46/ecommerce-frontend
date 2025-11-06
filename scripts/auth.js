@@ -1,3 +1,5 @@
+// auth.js (replace your current file with this)
+
 // ===== Firebase imports =====
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import {
@@ -27,36 +29,45 @@ const auth = getAuth(app);
 document.addEventListener('DOMContentLoaded', () => {
   const logoutBtn = document.getElementById("logoutBtn");
   const userNameElem = document.getElementById("userName");
-  const currentPage = window.location.pathname.split("/").pop(); // e.g. home.html
 
-  // Define which pages are public
-if (user && publicPages.includes(currentPage) && currentPage !== "signup.html") {
-  window.location.href = "home.html";
-}
+  // pages treated as public (no login required)
+  const publicPages = ["index.html", "login.html", "signup.html", ""];
+
+  // Helper: get current filename (dynamic, so checks latest on each auth change)
+  const getCurrentPage = () => window.location.pathname.split("/").pop();
+
+  // If signup flow sets this flag, onAuthStateChanged will ignore auto-redirects
+  // This prevents the createUser -> auto-signed-in -> redirect race.
+  const SIGNUP_FLAG = 'signupInProgress';
 
   // ===== AUTH STATE =====
   onAuthStateChanged(auth, (user) => {
+    const currentPage = getCurrentPage();
+
+    // If we're in the middle of signup, ignore redirect logic (prevents loop)
+    if (sessionStorage.getItem(SIGNUP_FLAG)) {
+      // don't redirect during signup; let signup code handle navigation
+      return;
+    }
+
     if (user) {
-      // Logged in
+      // logged in -> show logout and name
       if (logoutBtn) logoutBtn.style.display = "inline-block";
       if (userNameElem) userNameElem.textContent = `Hello, ${user.displayName || user.email}`;
 
-      // If user is on a public page (like login/index/signup), move them to home
-      if (publicPages.includes(currentPage)) {
-        console.log("Redirecting to home (user logged in)");
-        if (!currentPage.includes("home.html")) {
-          window.location.href = "home.html";
-        }
+      // send user to home if they're on a public page (except we allow staying on signup/login pages
+      // for specific UX reasons). Here we redirect only when on login or index, but not signup.
+      if (["index.html", "login.html", ""].includes(currentPage)) {
+        window.location.href = "home.html";
       }
 
     } else {
-      // Logged out
+      // not logged in -> hide logout, clear name
       if (logoutBtn) logoutBtn.style.display = "none";
       if (userNameElem) userNameElem.textContent = "";
 
-      // If on a protected page, send to login
+      // If user is on a protected page, redirect to login
       if (!publicPages.includes(currentPage)) {
-        console.log("Redirecting to login (user not logged in)");
         window.location.href = "login.html";
       }
     }
@@ -168,20 +179,40 @@ if (user && publicPages.includes(currentPage) && currentPage !== "signup.html") 
       }
 
       try {
+        // Mark that signup is in progress so onAuthStateChanged will not auto-redirect
+        sessionStorage.setItem(SIGNUP_FLAG, '1');
+
+        // create user (this signs the user in automatically)
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+        // update display name
         await updateProfile(userCredential.user, { displayName: name });
 
-        alert("Signup successful! Redirecting to login page...");
-signupForm.reset();
+        // Clear form and flag
+        signupForm.reset();
 
-// Sign out and then redirect (ensure state is cleared before navigation)
-signOut(auth).then(() => {
-  setTimeout(() => {
-    window.location.href = "login.html";
-  }, 500); // short delay ensures state updates
-});
+        // ===== OPTION A (RECOMMENDED) =====
+        // Keep user signed in and send them to home immediately.
+        // This avoids sign-out / sign-in race loops.
+        sessionStorage.removeItem(SIGNUP_FLAG);
+        alert("Signup successful! Redirecting to home...");
+        window.location.href = "home.html";
+        return;
+
+        // ===== OPTION B (IF YOU REALLY WANT TO FORCE LOGIN PAGE) =====
+        // If you insist on sending new users to the login page, uncomment the block below.
+        // IMPORTANT: this block signs the user out and navigates to login.html. Because we set
+        // sessionStorage flag above, onAuthStateChanged won't auto-redirect while the flow runs.
+        //
+        // await signOut(auth);
+        // sessionStorage.removeItem(SIGNUP_FLAG);
+        // alert("Signup complete. Please login with your new credentials.");
+        // window.location.href = "login.html";
 
       } catch (error) {
+        // remove the flag if signup failed
+        sessionStorage.removeItem(SIGNUP_FLAG);
+
         switch (error.code) {
           case "auth/email-already-in-use":
             alert("This email is already registered. Try logging in.");
