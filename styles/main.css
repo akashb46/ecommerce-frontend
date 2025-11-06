@@ -166,6 +166,10 @@ html, body {
   background: #e65c00;
   transform: translateY(-3px);
 }
+.banner{
+  top: 0px;           /* move down (Y-axis) */
+  left: 0px;         /* move right (X-axis) */
+}
 
 /* ==============================
    PRODUCT GRID / CARDS
