@@ -24,37 +24,41 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
+// Short-lived flag to prevent redirect loop during signup
+const SIGNUP_FLAG = "signupInProgress";
+
 document.addEventListener("DOMContentLoaded", () => {
   const logoutBtn = document.getElementById("logoutBtn");
   const userNameElem = document.getElementById("userName");
-  const currentPage = window.location.pathname.split("/").pop();
-  const publicPages = ["index.html", "login.html", "signup.html", ""];
 
-  // A flag to prevent infinite redirects
-  let redirectHandled = false;
+  const getCurrentPage = () => window.location.pathname.split("/").pop();
+  const publicPages = ["index.html", "login.html", "signup.html", ""];
 
   // ===== AUTH STATE =====
   onAuthStateChanged(auth, (user) => {
-    if (redirectHandled) return;
-    redirectHandled = true;
+    const currentPage = getCurrentPage();
+
+    // Prevent redirect while signup is finishing
+    if (sessionStorage.getItem(SIGNUP_FLAG)) return;
 
     if (user) {
-      // user is logged in
+      // Logged in
       if (logoutBtn) logoutBtn.style.display = "inline-block";
       if (userNameElem) userNameElem.textContent = `Hello, ${user.displayName || user.email}`;
 
-      // redirect only if on public pages
-      if (["index.html", "login.html", ""].includes(currentPage)) {
-        window.location.replace("home.html");
+      // Redirect only if on login or root page (not signup)
+      if (["login.html", ""].includes(currentPage)) {
+        window.location.href = "home.html";
       }
+
     } else {
-      // user is logged out
+      // Logged out
       if (logoutBtn) logoutBtn.style.display = "none";
       if (userNameElem) userNameElem.textContent = "";
 
-      // redirect to login if on protected pages
+      // If on protected page, send to login
       if (!publicPages.includes(currentPage)) {
-        window.location.replace("login.html");
+        window.location.href = "login.html";
       }
     }
   });
@@ -65,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         await signOut(auth);
         alert("Logged out successfully!");
-        window.location.replace("login.html");
+        window.location.href = "login.html";
       } catch (error) {
         alert("Error logging out: " + error.message);
       }
@@ -80,10 +84,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (loginToggle) {
       loginToggle.addEventListener("click", () => {
-        loginPasswordInput.type =
-          loginPasswordInput.type === "password" ? "text" : "password";
-        loginToggle.textContent =
-          loginPasswordInput.type === "password" ? "👁️" : "🙈";
+        const isHidden = loginPasswordInput.type === "password";
+        loginPasswordInput.type = isHidden ? "text" : "password";
+        loginToggle.textContent = isHidden ? "🙈" : "👁️";
       });
     }
 
@@ -100,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         await signInWithEmailAndPassword(auth, email, password);
         alert("Login successful!");
-        window.location.replace("home.html");
+        window.location.href = "home.html";
       } catch (error) {
         switch (error.code) {
           case "auth/user-not-found":
@@ -153,20 +156,28 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Passwords do not match!");
         return;
       }
-
       if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
         alert("Password must be at least 8 chars and include uppercase, lowercase & number");
         return;
       }
 
       try {
+        // Prevent redirect race during signup
+        sessionStorage.setItem(SIGNUP_FLAG, "1");
+
+        // Create user (auto signs in)
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName: name });
+
         alert("Signup successful! Redirecting to login page...");
-        await signOut(auth);
         signupForm.reset();
-        window.location.replace("login.html");
+
+        // Sign out then redirect safely
+        await signOut(auth);
+        sessionStorage.removeItem(SIGNUP_FLAG);
+        window.location.href = "login.html";
       } catch (error) {
+        sessionStorage.removeItem(SIGNUP_FLAG);
         switch (error.code) {
           case "auth/email-already-in-use":
             alert("This email is already registered. Try logging in.");
