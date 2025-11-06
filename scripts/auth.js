@@ -36,29 +36,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ===== AUTH STATE =====
   onAuthStateChanged(auth, (user) => {
-    if (redirectHandled) return;
-    redirectHandled = true;
+  const currentPage = getCurrentPage();
+  const publicPages = ["index.html", "login.html", "signup.html", ""];
 
-    if (user) {
-      // Logged in
-      if (logoutBtn) logoutBtn.style.display = "inline-block";
-      if (userNameElem) userNameElem.textContent = `Hello, ${user.displayName || user.email}`;
+  // Prevent redirect while signup is finishing
+  if (sessionStorage.getItem(SIGNUP_FLAG)) return;
 
-      // Redirect logged-in users away from login or signup to home
-      if (["index.html", "login.html", "signup.html", ""].includes(currentPage)) {
-        window.location.replace("home.html");
-      }
-    } else {
-      // Logged out
-      if (logoutBtn) logoutBtn.style.display = "none";
-      if (userNameElem) userNameElem.textContent = "";
+  if (user) {
+    // Logged in
+    if (logoutBtn) logoutBtn.style.display = "inline-block";
+    if (userNameElem) userNameElem.textContent = `Hello, ${user.displayName || user.email}`;
 
-      // Redirect to login if trying to access protected pages
-      if (!publicPages.includes(currentPage)) {
-        window.location.replace("login.html");
-      }
+    // ✅ Redirect only if on a public page
+    if (publicPages.includes(currentPage)) {
+      window.location.href = "home.html";
     }
-  });
+
+  } else {
+    // Logged out
+    if (logoutBtn) logoutBtn.style.display = "none";
+    if (userNameElem) userNameElem.textContent = "";
+
+    // ✅ Redirect to login only if trying to access protected page
+    if (!publicPages.includes(currentPage)) {
+      window.location.href = "login.html";
+    }
+  }
+});
+
 
   // ===== LOGOUT =====
   if (logoutBtn) {
